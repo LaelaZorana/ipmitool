@@ -1716,9 +1716,10 @@ ipmi_sel_get_std_entry(struct ipmi_intf * intf, uint16_t id,
   	{
     		evt->sel_type.oem_ts_type.timestamp= (rsp->data[8] << 24) |	(rsp->data[7] << 16) |
     			(rsp->data[6] << 8) | rsp->data[5];
-		evt->sel_type.oem_ts_type.manf_id[0]= rsp->data[11];
+		/* keep the wire order, LS byte first, so writeraw matches the BMC */
+		evt->sel_type.oem_ts_type.manf_id[0]= rsp->data[9];
 		evt->sel_type.oem_ts_type.manf_id[1]= rsp->data[10];
-		evt->sel_type.oem_ts_type.manf_id[2]= rsp->data[9];
+		evt->sel_type.oem_ts_type.manf_id[2]= rsp->data[11];
   		for(data_count=0; data_count < SEL_OEM_TS_DATA_LEN ; data_count++)
       			evt->sel_type.oem_ts_type.oem_defined[data_count] = rsp->data[(data_count+12)];
   	}
@@ -1849,7 +1850,7 @@ ipmi_sel_print_std_entry(struct ipmi_intf * intf, struct sel_event_record * evt)
 
 		if(evt->record_type <= 0xdf)
 		{
-			printf ("%02x%02x%02x", evt->sel_type.oem_ts_type.manf_id[0], evt->sel_type.oem_ts_type.manf_id[1], evt->sel_type.oem_ts_type.manf_id[2]);
+			printf ("%02x%02x%02x", evt->sel_type.oem_ts_type.manf_id[2], evt->sel_type.oem_ts_type.manf_id[1], evt->sel_type.oem_ts_type.manf_id[0]);
 			if (csv_output)
 				printf(",");
 			else
@@ -2055,8 +2056,8 @@ ipmi_sel_print_std_entry_verbose(struct ipmi_intf * intf, struct sel_event_recor
 	{
 		if(evt->record_type <= 0xdf)
 		{
-			printf (" Manufactacturer ID    : %02x%02x%02x\n", evt->sel_type.oem_ts_type.manf_id[0],
-			evt->sel_type.oem_ts_type.manf_id[1], evt->sel_type.oem_ts_type.manf_id[2]);
+			printf (" Manufactacturer ID    : %02x%02x%02x\n", evt->sel_type.oem_ts_type.manf_id[2],
+			evt->sel_type.oem_ts_type.manf_id[1], evt->sel_type.oem_ts_type.manf_id[0]);
 			printf (" OEM Defined           : ");
 			for(data_count=0;data_count < SEL_OEM_TS_DATA_LEN;data_count++)
 				printf("%02x", evt->sel_type.oem_ts_type.oem_defined[data_count]);
